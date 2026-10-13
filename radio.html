@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-stone-950 text-stone-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Récepteur TSF 1948 - V4.0</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts pour style Vintage -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <style>
+        .font-radio { font-family: 'Special Elite', cursive; }
+        .font-dial { font-family: 'Courier Prime', monospace; }
+        .font-brand { font-family: 'Cinzel', serif; }
+
+        /* Texture Bois Boîtier Vintage */
+        .wood-casing {
+            background-color: #3b1d11;
+            background-image: 
+                radial-gradient(ellipse at center, rgba(82, 38, 19, 0.8) 0%, rgba(26, 12, 6, 0.95) 100%),
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 4px);
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), inset 0 -5px 15px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.9);
+            border: 4px solid #231008;
+        }
+
+        .bakelite-knob {
+            background: radial-gradient(circle at 35% 35%, #58534e 0%, #1c1917 70%, #0c0a09 100%);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.4);
+        }
+
+        /* Cadran Vintage Rétroéclairé */
+        .dial-glass {
+            background: radial-gradient(circle at 50% 50%, #451a03 0%, #1e0902 85%, #0f0401 100%);
+            border: 3px solid #78350f;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 15px rgba(245, 158, 11, 0.2);
+            position: relative;
+        }
+
+        .dial-glass-lit {
+            background: radial-gradient(circle at 50% 50%, #78350f 0%, #3a1505 80%, #1a0802 100%) !important;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7), 0 0 25px rgba(245, 158, 11, 0.4) !important;
+        }
+
+        /* Œil Magique (Magic Eye Tube EM34) */
+        .magic-eye {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #022c22 0%, #064e3b 60%, #020617 100%);
+            border: 3px solid #1e293b;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .magic-eye-glow {
+            background: radial-gradient(circle, #34d399 0%, #10b981 40%, #047857 70%, transparent 80%);
+            box-shadow: 0 0 15px #10b981, inset 0 0 15px #34d399;
+        }
+
+        /* Grille Tissu Haut-Parleur */
+        .speaker-grille {
+            background-color: #271c19;
+            background-image: 
+                repeating-linear-gradient(45deg, #44322d 0, #44322d 2px, transparent 0, transparent 8px),
+                repeating-linear-gradient(-45deg, #18100e 0, #18100e 2px, #271c19 0, #271c19 8px);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
+            border: 2px solid #3d2820;
+        }
+
+        /* Animation Aiguille */
+        #dial-needle {
+            transition: left 0.1s ease-out;
+        }
+    </style>
+</head>
+<body class="h-full bg-stone-950 text-stone-200 flex flex-col justify-between select-none font-radio overflow-x-hidden">
+
+    <!-- Header Navigation -->
+    <header class="bg-stone-900 border-b border-stone-800 p-3 flex justify-between items-center z-30">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-amber-900/40 text-amber-500 rounded border border-amber-700/50">
+                <i class="fa-solid fa-radio text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-wider text-amber-500 font-brand">T.S.F. RADIO Kami Wolf SUPER-HETERODYNE 1948</h1>
+                <p class="text-xs text-stone-400 font-dial">Simulateur Audio AM / Grandes Ondes - Ondes Moyennes</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xs font-dial">
+            <button id="btn-ambient" class="bg-stone-800 hover:bg-stone-700 text-amber-500 px-3 py-1.5 rounded border border-stone-700 flex items-center space-x-2 transition">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span id="ambient-label">Éclairage : Sombre</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main id="main-frame" class="flex-grow p-4 md:p-8 flex flex-col items-center justify-center relative bg-stone-950">
+        <div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+            <!-- RADIO RECEIVER HARDWARE UNIT (8 cols) -->
+            <div class="lg:col-span-8 wood-casing rounded-3xl p-6 md:p-8 relative flex flex-col justify-between">
+                
+                <!-- Front Top Header: Logo & Magic Eye -->
+                <div class="flex justify-between items-center mb-6 border-b border-amber-900/40 pb-4">
+                    <div>
+                        <span class="font-brand text-xl font-extrabold text-amber-600 tracking-widest block">RADIO</span>
+                        <span class="text-[10px] text-amber-700 font-dial tracking-wider uppercase">Modèle Prestige - Type RA49</span>
+                    </div>
+
+                    <!-- Magic Eye Tube Indicator -->
+                    <div class="flex items-center space-x-3 bg-stone-900/80 px-3 py-1.5 rounded-full border border-stone-800">
+                        <span class="text-[10px] font-dial text-stone-400 uppercase">Accord Optique</span>
+                        <div id="magic-eye" class="magic-eye flex items-center justify-center">
+                            <div id="magic-eye-iris" class="w-8 h-8 rounded-full bg-stone-950 transition-all duration-200"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dial Glass Screen (Cadran des Stations) -->
+                <div id="dial-screen" class="dial-glass rounded-2xl p-4 h-48 relative overflow-hidden flex flex-col justify-between border-2 border-amber-900/60 mb-6">
+                    <!-- Glass reflection -->
+                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
+
+                    <!-- Frequences Grid / Stations -->
+                    <div class="text-amber-500/80 font-dial text-xs space-y-3 z-10">
+                        <div class="flex justify-between border-b border-amber-900/40 pb-1 text-[11px] text-amber-400 font-bold">
+                            <span>GO (150 - 300 kHz)</span>
+                            <span>BBC ALLOUIS RADIO-PARIS LUXEMBOURG SOTTENS</span>
+                        </div>
+                        <div class="flex justify-between border-b border-amber-900/40 pb-1 text-[11px] text-amber-500">
+                            <span>OM (550 - 1600 kHz)</span>
+                            <span>LYON PR PARIS-INTER PTT LILLE NANTES STUTTGART</span>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-amber-600">
+                            <span>OC (6.0 - 18.0 MHz)</span>
+                            <span>PRAGUE LONDRES NEW-YORK MOSCOU BRAZZAVILLE</span>
+                        </div>
+                    </div>
+
+                    <!-- Tuning Needle (Aiguille du Cadran) -->
+                    <div id="dial-needle" class="absolute top-0 bottom-0 w-0.5 bg-red-600 shadow-[0_0_8px_#ef4444] z-20 pointer-events-none" style="left: 15%;">
+                        <div class="w-2 h-2 rounded-full bg-red-500 -ml-0.75 top-1/2 absolute"></div>
+                    </div>
+
+                    <!-- Screen Footer Stats -->
+                    <div class="flex justify-between items-center text-[10px] font-dial text-amber-600/80 z-10 pt-2 border-t border-amber-900/30">
+                        <span id="display-band">BANDE : GRANDES ONDES (GO)</span>
+                        <span id="display-freq">FREQ : 160 kHz</span>
+                    </div>
+                </div>
+
+                <!-- Speaker & Controls Section -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
+                    
+                    <!-- Speaker Grille (7 cols) -->
+                    <div class="sm:col-span-7 speaker-grille rounded-xl h-32 p-3 flex items-center justify-center relative">
+                        <div class="text-center bg-stone-950/70 p-2 rounded border border-amber-900/30">
+                            <i class="fa-solid fa-compact-disc text-amber-800 text-2xl animate-spin" style="animation-duration: 10s;"></i>
+                            <p id="station-title" class="text-xs text-amber-500 font-dial mt-1 font-bold">RECEPTION OFF</p>
+                        </div>
+                    </div>
+
+                    <!-- Knobs Controls (5 cols) -->
+                    <div class="sm:col-span-5 flex flex-col justify-around h-full space-y-4">
+                        
+                        <!-- Power & Volume Knob -->
+                        <div class="flex items-center justify-between bg-stone-900/60 p-2 rounded-lg border border-stone-800">
+                            <span class="text-xs font-dial text-stone-300">INTER / VOL</span>
+                            <div class="flex items-center space-x-2">
+                                <button id="btn-power" class="w-10 h-10 rounded-full bakelite-knob flex items-center justify-center text-amber-600 hover:text-amber-400 transition">
+                                    <i class="fa-solid fa-power-off text-sm"></i>
+                                </button>
+                                <input type="range" id="knob-volume" min="0" max="100" value="70" class="w-16 accent-amber-600 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Tuning Knob (Accord) -->
+                        <div class="flex items-center justify-between bg-stone-900/60 p-2 rounded-lg border border-stone-800">
+                            <span class="text-xs font-dial text-stone-300">ACCORD (STATION)</span>
+                            <input type="range" id="knob-tuning" min="0" max="100" value="15" class="w-24 accent-amber-600 cursor-pointer">
+                        </div>
+
+                        <!-- Band Selector Switch -->
+                        <div class="flex items-center justify-between bg-stone-900/60 p-2 rounded-lg border border-stone-800">
+                            <span class="text-xs font-dial text-stone-300">GAMME</span>
+                            <select id="band-select" class="bg-stone-950 text-amber-500 text-xs font-dial border border-amber-900/50 rounded p-1 focus:outline-none">
+                                <option value="GO">GO (Grandes Ondes)</option>
+                                <option value="OM">OM (Ondes Moyennes)</option>
+                                <option value="OC">OC (Ondes Courtes)</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT SECTION: STATION GUIDE & INFO (4 cols) -->
+            <div class="lg:col-span-4 flex flex-col space-y-4">
+                
+                <div class="bg-stone-900 border border-stone-800 rounded-2xl p-5 font-dial">
+                    <h3 class="text-sm font-bold text-amber-500 mb-3 uppercase border-b border-stone-800 pb-2">
+                        <i class="fa-solid fa-list-check mr-2"></i>Guide des Stations (1940-1950)
+                    </h3>
+
+                    <div id="station-list" class="space-y-2 text-xs">
+                        <!-- Rempli dynamiquement en JS -->
+                    </div>
+                </div>
+
+                <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 font-dial text-xs text-stone-400 space-y-2">
+                    <p class="text-amber-600 font-bold"><i class="fa-solid fa-circle-info mr-1"></i>Instructions :</p>
+                    <p>1. Cliquez sur le bouton <strong class="text-stone-200">POWER</strong> pour chauffer les lampes TSF.</p>
+                    <p>2. Tournez le curseur <strong class="text-stone-200">ACCORD</strong> pour chercher les fréquences des stations.</p>
+                    <p>3. Regardez l'<strong>Œil Magique</strong> : plus le halo vert se resserre, meilleur est le signal !</p>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 border-t border-stone-800 py-2 px-4 text-xs font-dial text-stone-500 flex justify-between items-center">
+        <span>T.S.F. Vintage Audio Synthesizer Engine</span>
+        <span>Émetteur : AM / Modulation d'Amplitude</span>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // ==========================================
+        // 1. DATA STATIONS DE RADIO ANNEES 40-50
+        // ==========================================
+        const STATIONS = [
+            { id: 1, band: 'GO', freq: 160, pos: 10, name: "BBC Light Programme (Londres)", audioPreset: 'speech_en', desc: "Bulletins d'informations & Musique Big Band 1944" },
+            { id: 2, band: 'GO', freq: 216, pos: 35, name: "Radiodiffusion Française - Paris-Inter", audioPreset: 'chanson_fr', desc: "Chansons françaises, Edith Piaf, Charles Trenet" },
+            { id: 3, band: 'GO', freq: 252, pos: 70, name: "Radio Luxembourg", audioPreset: 'jazz_us', desc: "Orchestres Swing & Variétés internationales" },
+            { id: 4, band: 'OM', freq: 612, pos: 25, name: "Radio Lyon PTT", audioPreset: 'speech_fr', desc: "Chronique agricole et journal parlé de 1948" },
+            { id: 5, band: 'OM', freq: 863, pos: 55, name: "AFN Munich (American Forces Network)", audioPreset: 'jazz_us', desc: "Glenn Miller, Duke Ellington - Transmissions US" },
+            { id: 6, band: 'OC', freq: 9500, pos: 45, name: "Voice of America (Washington)", audioPreset: 'speech_en', desc: "Émissions d'après-guerre en Ondes Courtes" }
+        ];
+
+        // ==========================================
+        // 2. AUDIO ENGINE (Web Audio API Synthesizer)
+        // ==========================================
+        class VintageRadioAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.power = false;
+                this.volume = 0.7;
+                this.currentFreqPos = 15;
+                this.currentBand = 'GO';
+
+                // Audio Nodes
+                this.masterGain = null;
+                this.staticNoiseNode = null;
+                this.staticGain = null;
+                this.humNode = null;
+                this.humGain = null;
+
+                // Simulated Radio Signal Oscillators
+                this.signalGain = null;
+                this.carrierOsc = null;
+                this.musicOsc = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+                    this.masterGain.connect(this.ctx.destination);
+
+                    this.setupStaticNoise();
+                    this.setupHumNoise();
+                    this.setupRadioSignal();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Générateur de souffle AM / White Noise
+            setupStaticNoise() {
+                const bufferSize = this.ctx.sampleRate * 2;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                this.staticNoiseNode = this.ctx.createBufferSource();
+                this.staticNoiseNode.buffer = buffer;
+                this.staticNoiseNode.loop = true;
+
+                // Bandpass Filter pour simuler la bande passante limitée AM (300Hz - 3kHz)
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                filter.Q.setValueAtTime(1.2, this.ctx.currentTime);
+
+                this.staticGain = this.ctx.createGain();
+                this.staticGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+                this.staticNoiseNode.connect(filter);
+                filter.connect(this.staticGain);
+                this.staticGain.connect(this.masterGain);
+                this.staticNoiseNode.start();
+            }
+
+            // Générateur du ronflement 50Hz secteur (Lampes TSF)
+            setupHumNoise() {
+                this.humNode = this.ctx.createOscillator();
+                this.humNode.type = 'sine';
+                this.humNode.frequency.setValueAtTime(50, this.ctx.currentTime); // 50 Hz Hum
+
+                this.humGain = this.ctx.createGain();
+                this.humGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+                this.humNode.connect(this.humGain);
+                this.humGain.connect(this.masterGain);
+                this.humNode.start();
+            }
+
+            // Générateur de signal radio simulé (chanson/parole vintage)
+            setupRadioSignal() {
+                this.signalGain = this.ctx.createGain();
+                this.signalGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+                // Simulation tonale AM vintage avec oscillateurs modulés
+                this.carrierOsc = this.ctx.createOscillator();
+                this.carrierOsc.type = 'triangle';
+                this.carrierOsc.frequency.setValueAtTime(440, this.ctx.currentTime);
+
+                this.musicOsc = this.ctx.createOscillator();
+                this.musicOsc.type = 'sawtooth';
+                this.musicOsc.frequency.setValueAtTime(220, this.ctx.currentTime);
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2500, this.ctx.currentTime); // Son étouffé haut-parleur d'époque
+
+                this.carrierOsc.connect(this.signalGain);
+                this.musicOsc.connect(this.signalGain);
+                this.signalGain.connect(filter);
+                filter.connect(this.masterGain);
+
+                this.carrierOsc.start();
+                this.musicOsc.start();
+            }
+
+            setPower(on) {
+                this.power = on;
+                this.init();
+
+                if (on) {
+                    // Bruit de préchauffage des tubes
+                    this.humGain.gain.setTargetAtTime(0.04, this.ctx.currentTime, 0.5);
+                    this.updateTuning(this.currentFreqPos, this.currentBand);
+                } else {
+                    this.humGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
+                    this.staticGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
+                    this.signalGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
+                }
+            }
+
+            setVolume(val) {
+                this.volume = val / 100;
+                if (this.masterGain) {
+                    this.masterGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
+                }
+            }
+
+            updateTuning(position, band) {
+                this.currentFreqPos = position;
+                this.currentBand = band;
+
+                if (!this.power) return;
+
+                // Chercher la station la plus proche sur la bande
+                let bestMatch = null;
+                let minDistance = 100;
+
+                STATIONS.filter(s => s.band === band).forEach(st => {
+                    const dist = Math.abs(st.pos - position);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        bestMatch = st;
+                    }
+                });
+
+                // Qualité de la réception (0 = parasites complets, 1 = signal parfait)
+                let signalQuality = 0;
+                if (bestMatch && minDistance < 6) {
+                    signalQuality = 1 - (minDistance / 6);
+                }
+
+                // Ajuster le volume des parasites vs signal radio
+                const staticVol = 0.15 * (1 - (signalQuality * 0.8));
+                const signalVol = 0.25 * signalQuality;
+
+                this.staticGain.gain.setTargetAtTime(staticVol, this.ctx.currentTime, 0.05);
+                this.signalGain.gain.setTargetAtTime(signalVol, this.ctx.currentTime, 0.05);
+
+                // Moduler les fréquences simulées
+                if (bestMatch) {
+                    const freqBase = bestMatch.id * 110 + 150;
+                    this.carrierOsc.frequency.setTargetAtTime(freqBase, this.ctx.currentTime, 0.1);
+                    this.musicOsc.frequency.setTargetAtTime(freqBase / 2, this.ctx.currentTime, 0.1);
+                }
+
+                return { quality: signalQuality, station: signalQuality > 0.4 ? bestMatch : null };
+            }
+        }
+
+        const audioEngine = new VintageRadioAudioEngine();
+
+        // ==========================================
+        // 3. CONTROLEURS ET INTERFACE UI
+        // ==========================================
+        const ui = {
+            btnPower: document.getElementById('btn-power'),
+            knobVolume: document.getElementById('knob-volume'),
+            knobTuning: document.getElementById('knob-tuning'),
+            bandSelect: document.getElementById('band-select'),
+            dialScreen: document.getElementById('dial-screen'),
+            dialNeedle: document.getElementById('dial-needle'),
+            displayBand: document.getElementById('display-band'),
+            displayFreq: document.getElementById('display-freq'),
+            stationTitle: document.getElementById('station-title'),
+            magicEyeIris: document.getElementById('magic-eye-iris'),
+            magicEye: document.getElementById('magic-eye'),
+            stationList: document.getElementById('station-list'),
+            btnAmbient: document.getElementById('btn-ambient'),
+            mainFrame: document.getElementById('main-frame')
+        };
+
+        let radioPower = false;
+        let ambientDark = true;
+
+        function renderStationGuide() {
+            ui.stationList.innerHTML = '';
+            STATIONS.forEach(st => {
+                const item = document.createElement('div');
+                item.className = "p-2 rounded bg-stone-950/80 border border-stone-800 flex justify-between items-center cursor-pointer hover:border-amber-700 transition";
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-amber-500">${st.name}</p>
+                        <p class="text-[10px] text-stone-500">${st.desc}</p>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-500 text-[10px] font-bold">${st.band} ${st.freq}</span>
+                `;
+                item.addEventListener('click', () => {
+                    ui.bandSelect.value = st.band;
+                    ui.knobTuning.value = st.pos;
+                    updateRadioState();
+                });
+                ui.stationList.appendChild(item);
+            });
+        }
+
+        function updateRadioState() {
+            const pos = parseFloat(ui.knobTuning.value);
+            const band = ui.bandSelect.value;
+
+            // Déplacer l'aiguille du cadran (10% à 90%)
+            const needleLeft = 10 + (pos * 0.8);
+            ui.dialNeedle.style.left = `${needleLeft}%`;
+
+            ui.displayBand.textContent = `BANDE : ${band === 'GO' ? 'GRANDES ONDES (GO)' : band === 'OM' ? 'ONDES MOYENNES (OM)' : 'ONDES COURTES (OC)'}`;
+            
+            // Calcul fréquence approximative
+            let freqCalc = 150 + Math.round(pos * 1.5);
+            if (band === 'OM') freqCalc = 550 + Math.round(pos * 10.5);
+            if (band === 'OC') freqCalc = (6.0 + (pos * 0.12)).toFixed(1) + ' MHz';
+            else freqCalc += ' kHz';
+            
+            ui.displayFreq.textContent = `FREQ : ${freqCalc}`;
+
+            if (!radioPower) {
+                ui.stationTitle.textContent = "RECEPTION OFF";
+                ui.stationTitle.className = "text-xs text-stone-600 font-dial mt-1 font-bold";
+                ui.magicEyeIris.style.transform = "scale(1)";
+                ui.magicEye.classList.remove('magic-eye-glow');
+                return;
+            }
+
+            const result = audioEngine.updateTuning(pos, band);
+
+            // Mise à jour de l'œil magique (l'iris se ferme selon la qualité)
+            ui.magicEye.classList.add('magic-eye-glow');
+            const scaleVal = 1 - (result.quality * 0.75);
+            ui.magicEyeIris.style.transform = `scale(${scaleVal})`;
+
+            if (result.station) {
+                ui.stationTitle.textContent = `▶ ${result.station.name}`;
+                ui.stationTitle.className = "text-xs text-amber-400 font-dial mt-1 font-bold animate-pulse";
+            } else {
+                ui.stationTitle.textContent = "PARASITES ET SOUFFLE (AM)...";
+                ui.stationTitle.className = "text-xs text-stone-500 font-dial mt-1 font-bold";
+            }
+        }
+
+        // Event Listeners
+        ui.btnPower.addEventListener('click', () => {
+            radioPower = !radioPower;
+            
+            if (radioPower) {
+                ui.btnPower.classList.add('text-amber-400', 'shadow-[0_0_15px_#f59e0b]');
+                ui.dialScreen.classList.add('dial-glass-lit');
+            } else {
+                ui.btnPower.classList.remove('text-amber-400', 'shadow-[0_0_15px_#f59e0b]');
+                ui.dialScreen.classList.remove('dial-glass-lit');
+            }
+
+            audioEngine.setPower(radioPower);
+            updateRadioState();
+        });
+
+        ui.knobVolume.addEventListener('input', (e) => {
+            audioEngine.setVolume(e.target.value);
+        });
+
+        ui.knobTuning.addEventListener('input', updateRadioState);
+        ui.bandSelect.addEventListener('change', updateRadioState);
+
+        ui.btnAmbient.addEventListener('click', () => {
+            ambientDark = !ambientDark;
+            if (ambientDark) {
+                ui.mainFrame.className = "flex-grow p-4 md:p-8 flex flex-col items-center justify-center relative bg-stone-950";
+                document.getElementById('ambient-label').textContent = "Éclairage : Sombre";
+            } else {
+                ui.mainFrame.className = "flex-grow p-4 md:p-8 flex flex-col items-center justify-center relative bg-stone-800";
+                document.getElementById('ambient-label').textContent = "Éclairage : Éclairé";
+            }
+        });
+
+        // Initialisation
+        renderStationGuide();
+        updateRadioState();
+    </script>
+</body>
+</html>
